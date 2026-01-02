@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-purple text-white;
+    background-image: 
+      linear-gradient(rgba(0, 217, 255, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 217, 255, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .text-neon-blue {
+    color: #00F0FF;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.8), 0 0 20px rgba(0, 240, 255, 0.5);
+  }
+  
+  .text-neon-pink {
+    color: #FF00FF;
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.8), 0 0 20px rgba(255, 0, 255, 0.5);
+  }
+  
+  .border-neon-blue {
+    border-color: #00F0FF;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+  }
+  
+  .border-neon-pink {
+    border-color: #FF00FF;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+  }
+  
+  .bg-neon-blue-glow {
+    background-color: rgba(0, 240, 255, 0.1);
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+  }
+  
+  .bg-neon-pink-glow {
+    background-color: rgba(255, 0, 255, 0.1);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+  }
+}
