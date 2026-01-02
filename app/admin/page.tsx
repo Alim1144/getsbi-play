@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation'
 import { Product, ProductCategory } from '@/lib/types'
 import { getProducts, saveProduct, deleteProduct } from '@/lib/storage'
 import { getCategoryName } from '@/lib/utils'
-import { Plus, Trash2, Edit, X, Upload } from 'lucide-react'
+import { Plus, Trash2, Edit, X, Upload, LogOut } from 'lucide-react'
 
 export default function AdminPage() {
   const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isChecking, setIsChecking] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -22,8 +24,30 @@ export default function AdminPage() {
   })
 
   useEffect(() => {
-    setProducts(getProducts())
-  }, [])
+    // Проверяем авторизацию
+    fetch('/api/admin/check')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated) {
+          setIsAuthenticated(true)
+          setProducts(getProducts())
+        } else {
+          router.push('/admin/login')
+        }
+      })
+      .catch(() => {
+        router.push('/admin/login')
+      })
+      .finally(() => {
+        setIsChecking(false)
+      })
+  }, [router])
+
+  const handleLogout = async () => {
+    await fetch('/api/admin/logout', { method: 'POST' })
+    router.push('/admin/login')
+    router.refresh()
+  }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -106,17 +130,40 @@ export default function AdminPage() {
 
   const categories: ProductCategory[] = ['consoles', 'games', 'accounts', 'controllers', 'services']
 
+  if (isChecking) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-16">
+          <p className="text-gray-400">Проверка доступа...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return null
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-neon-blue">Админ-панель</h1>
-        <button
-          onClick={() => setIsFormOpen(true)}
-          className="bg-neon-blue/20 hover:bg-neon-blue/30 border-2 border-neon-blue text-neon-blue font-semibold px-6 py-3 rounded-lg transition-all hover:scale-105 flex items-center space-x-2"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Добавить товар</span>
-        </button>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => setIsFormOpen(true)}
+            className="bg-neon-blue/20 hover:bg-neon-blue/30 border-2 border-neon-blue text-neon-blue font-semibold px-6 py-3 rounded-lg transition-all hover:scale-105 flex items-center space-x-2"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Добавить товар</span>
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500/20 hover:bg-red-500/30 border-2 border-red-500 text-red-400 font-semibold px-6 py-3 rounded-lg transition-all hover:scale-105 flex items-center space-x-2"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Выйти</span>
+          </button>
+        </div>
       </div>
 
       {/* Form Modal */}
