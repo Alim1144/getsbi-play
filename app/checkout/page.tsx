@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Product, CartItem, OrderItem } from '@/lib/types'
 import { getProducts, getCart, clearCart } from '@/lib/storage'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, formatDiscountedPrice, calculateDiscountedPrice } from '@/lib/utils'
 import { ArrowLeft, Send } from 'lucide-react'
 import Link from 'next/link'
 
@@ -33,19 +33,25 @@ export default function CheckoutPage() {
       .filter((item): item is CartItem => item !== null)
 
     setCartItems(items)
-    setTotal(items.reduce((sum, item) => sum + item.product.price * item.quantity, 0))
+    setTotal(items.reduce((sum, item) => {
+      const price = calculateDiscountedPrice(item.product.price, item.product.discount)
+      return sum + price * item.quantity
+    }, 0))
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    const orderItems: OrderItem[] = cartItems.map((item) => ({
-      productId: item.product.id,
-      productName: item.product.name,
-      quantity: item.quantity,
-      price: item.product.price,
-    }))
+    const orderItems: OrderItem[] = cartItems.map((item) => {
+      const finalPrice = calculateDiscountedPrice(item.product.price, item.product.discount)
+      return {
+        productId: item.product.id,
+        productName: item.product.name,
+        quantity: item.quantity,
+        price: finalPrice,
+      }
+    })
 
     try {
       const response = await fetch('/api/order', {
@@ -192,11 +198,13 @@ export default function CheckoutPage() {
                   <div className="flex-1">
                     <p className="text-white font-semibold">{item.product.name}</p>
                     <p className="text-sm text-gray-400">
-                      {item.quantity} × {formatPrice(item.product.price)}
+                      {item.quantity} × {item.product.discount && item.product.discount > 0 
+                        ? formatDiscountedPrice(item.product.price, item.product.discount)
+                        : formatPrice(item.product.price)}
                     </p>
                   </div>
                   <div className="text-neon-pink font-semibold">
-                    {formatPrice(item.product.price * item.quantity)}
+                    {formatPrice(calculateDiscountedPrice(item.product.price, item.product.discount) * item.quantity)}
                   </div>
                 </div>
               ))}

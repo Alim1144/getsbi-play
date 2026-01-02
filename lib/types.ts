@@ -5,6 +5,7 @@ export interface Product {
   name: string
   description: string
   price: number
+  discount?: number // Скидка в процентах (0-100)
   category: ProductCategory
   images: string[]
   createdAt: string

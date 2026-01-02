@@ -15,3 +15,13 @@ export function getCategoryName(category: string): string {
   }
   return names[category] || category
 }
+
+export function calculateDiscountedPrice(price: number, discount?: number): number {
+  if (!discount || discount <= 0) return price
+  return price * (1 - discount / 100)
+}
+
+export function formatDiscountedPrice(price: number, discount?: number): string {
+  const discountedPrice = calculateDiscountedPrice(price, discount)
+  return formatPrice(discountedPrice)
+}

@@ -19,6 +19,7 @@ export default function AdminPage() {
     name: '',
     description: '',
     price: '',
+    discount: '',
     category: 'consoles' as ProductCategory,
     images: [] as string[],
   })
@@ -86,6 +87,7 @@ export default function AdminPage() {
       name: formData.name,
       description: formData.description,
       price: parseFloat(formData.price),
+      discount: formData.discount ? parseFloat(formData.discount) : undefined,
       category: formData.category,
       images: formData.images,
       createdAt: editingProduct?.createdAt || new Date().toISOString(),
@@ -102,6 +104,7 @@ export default function AdminPage() {
       name: '',
       description: '',
       price: '',
+      discount: '',
       category: 'consoles',
       images: [],
     })
@@ -115,6 +118,7 @@ export default function AdminPage() {
       name: product.name,
       description: product.description,
       price: product.price.toString(),
+      discount: product.discount?.toString() || '',
       category: product.category,
       images: product.images,
     })
@@ -310,6 +314,7 @@ export default function AdminPage() {
                   <h3 className="text-xl font-bold text-neon-blue">{product.name}</h3>
                   <p className="text-sm text-gray-400">
                     {getCategoryName(product.category)} • {product.price} ₽
+                    {product.discount && product.discount > 0 && ` (скидка ${product.discount}%)`}
                   </p>
                 </div>
               </div>

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Product } from '@/lib/types'
 import { getProducts } from '@/lib/storage'
-import { formatPrice, getCategoryName } from '@/lib/utils'
+import { formatPrice, formatDiscountedPrice, calculateDiscountedPrice, getCategoryName } from '@/lib/utils'
 import { ShoppingCart, ArrowLeft } from 'lucide-react'
 
 export default function ProductPage() {
@@ -108,8 +108,26 @@ export default function ProductPage() {
             {getCategoryName(product.category)}
           </div>
           <h1 className="text-4xl font-bold text-neon-blue mb-4">{product.name}</h1>
-          <div className="text-4xl font-bold text-neon-pink mb-6">
-            {formatPrice(product.price)}
+          <div className="mb-6">
+            {product.discount && product.discount > 0 ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex flex-col">
+                  <div className="text-4xl font-bold text-neon-pink">
+                    {formatDiscountedPrice(product.price, product.discount)}
+                  </div>
+                  <div className="text-xl text-gray-400 line-through mt-1">
+                    {formatPrice(product.price)}
+                  </div>
+                </div>
+                <span className="bg-neon-pink/20 text-neon-pink px-4 py-2 rounded-lg text-lg font-bold">
+                  -{product.discount}%
+                </span>
+              </div>
+            ) : (
+              <div className="text-4xl font-bold text-neon-pink">
+                {formatPrice(product.price)}
+              </div>
+            )}
           </div>
 
           <div className="mb-6">

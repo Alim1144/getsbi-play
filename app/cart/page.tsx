@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Product, CartItem } from '@/lib/types'
 import { getProducts, getCart, clearCart } from '@/lib/storage'
-import { formatPrice, getCategoryName } from '@/lib/utils'
+import { formatPrice, formatDiscountedPrice, calculateDiscountedPrice, getCategoryName } from '@/lib/utils'
 import { Trash2, ShoppingBag, ArrowLeft } from 'lucide-react'
 
 export default function CartPage() {
@@ -29,7 +29,10 @@ export default function CartPage() {
       .filter((item): item is CartItem => item !== null)
 
     setCartItems(items)
-    setTotal(items.reduce((sum, item) => sum + item.product.price * item.quantity, 0))
+    setTotal(items.reduce((sum, item) => {
+      const price = calculateDiscountedPrice(item.product.price, item.product.discount)
+      return sum + price * item.quantity
+    }, 0))
   }
 
   const removeFromCart = (productId: string) => {
@@ -100,7 +103,16 @@ export default function CartPage() {
                   </Link>
                   <p className="text-sm text-gray-400">{getCategoryName(item.product.category)}</p>
                   <div className="text-lg font-semibold text-neon-pink mt-2">
-                    {formatPrice(item.product.price)}
+                    {item.product.discount && item.product.discount > 0 ? (
+                      <div className="flex flex-col">
+                        <span>{formatDiscountedPrice(item.product.price, item.product.discount)}</span>
+                        <span className="text-sm text-gray-400 line-through">
+                          {formatPrice(item.product.price)}
+                        </span>
+                      </div>
+                    ) : (
+                      formatPrice(item.product.price)
+                    )}
                   </div>
                 </div>
 

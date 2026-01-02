@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Product, ProductCategory } from '@/lib/types'
 import { getProducts } from '@/lib/storage'
-import { formatPrice, getCategoryName } from '@/lib/utils'
+import { formatPrice, formatDiscountedPrice, calculateDiscountedPrice, getCategoryName } from '@/lib/utils'
 
 function CatalogContent() {
   const searchParams = useSearchParams()
@@ -124,8 +124,26 @@ function CatalogContent() {
                 <p className="text-gray-400 text-sm mb-3 line-clamp-2">
                   {product.description}
                 </p>
-                <div className="text-2xl font-bold text-neon-pink">
-                  {formatPrice(product.price)}
+                <div className="flex items-center space-x-3">
+                  {product.discount && product.discount > 0 ? (
+                    <>
+                      <div className="flex flex-col">
+                        <div className="text-xl font-bold text-neon-pink">
+                          {formatDiscountedPrice(product.price, product.discount)}
+                        </div>
+                        <div className="text-sm text-gray-400 line-through">
+                          {formatPrice(product.price)}
+                        </div>
+                      </div>
+                      <span className="bg-neon-pink/20 text-neon-pink px-2 py-1 rounded text-sm font-bold">
+                        -{product.discount}%
+                      </span>
+                    </>
+                  ) : (
+                    <div className="text-2xl font-bold text-neon-pink">
+                      {formatPrice(product.price)}
+                    </div>
+                  )}
                 </div>
               </div>
             </Link>
