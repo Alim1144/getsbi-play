@@ -16,9 +16,12 @@ export default function ProductPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
 
   useEffect(() => {
-    const products = getProducts()
-    const foundProduct = products.find((p) => p.id === params.id)
-    setProduct(foundProduct || null)
+    const loadProduct = async () => {
+      const products = await getProducts()
+      const foundProduct = products.find((p) => p.id === params.id)
+      setProduct(foundProduct || null)
+    }
+    loadProduct()
   }, [params.id])
 
   const addToCart = () => {

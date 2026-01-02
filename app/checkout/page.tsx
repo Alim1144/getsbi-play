@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Product, CartItem, OrderItem } from '@/lib/types'
-import { getProducts, getCart, clearCart } from '@/lib/storage'
+import { getProducts } from '@/lib/storage'
+import { getCart, clearCart } from '@/lib/storage'
 import { formatPrice, formatDiscountedPrice, calculateDiscountedPrice } from '@/lib/utils'
 import { ArrowLeft, Send } from 'lucide-react'
 import Link from 'next/link'
@@ -22,21 +23,24 @@ export default function CheckoutPage() {
   })
 
   useEffect(() => {
-    const cart = getCart()
-    const products = getProducts()
-    
-    const items: CartItem[] = cart
-      .map((item) => {
-        const product = products.find((p) => p.id === item.productId)
-        return product ? { product, quantity: item.quantity } : null
-      })
-      .filter((item): item is CartItem => item !== null)
+    const loadCart = async () => {
+      const cart = getCart()
+      const products = await getProducts()
+      
+      const items: CartItem[] = cart
+        .map((item) => {
+          const product = products.find((p) => p.id === item.productId)
+          return product ? { product, quantity: item.quantity } : null
+        })
+        .filter((item): item is CartItem => item !== null)
 
-    setCartItems(items)
-    setTotal(items.reduce((sum, item) => {
-      const price = calculateDiscountedPrice(item.product.price, item.product.discount)
-      return sum + price * item.quantity
-    }, 0))
+      setCartItems(items)
+      setTotal(items.reduce((sum, item) => {
+        const price = calculateDiscountedPrice(item.product.price, item.product.discount)
+        return sum + price * item.quantity
+      }, 0))
+    }
+    loadCart()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {

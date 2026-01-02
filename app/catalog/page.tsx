@@ -19,8 +19,11 @@ function CatalogContent() {
   const categories: ProductCategory[] = ['consoles', 'games', 'accounts', 'controllers', 'services']
 
   useEffect(() => {
-    const allProducts = getProducts()
-    setProducts(allProducts)
+    const loadProducts = async () => {
+      const allProducts = await getProducts()
+      setProducts(allProducts)
+    }
+    loadProducts()
   }, [])
 
   useEffect(() => {

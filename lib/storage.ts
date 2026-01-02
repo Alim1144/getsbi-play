@@ -2,8 +2,73 @@ import { Product } from './types'
 
 const STORAGE_KEY = 'getsbi-products'
 const CART_KEY = 'getsbi-cart'
+const API_BASE = '/api/products'
 
-export function getProducts(): Product[] {
+// Асинхронные функции для работы с товарами (через API/MongoDB)
+export async function getProducts(): Promise<Product[]> {
+  try {
+    const response = await fetch(API_BASE, {
+      cache: 'no-store',
+    })
+    
+    if (response.ok) {
+      return await response.json()
+    }
+  } catch (error) {
+    console.error('Error fetching products from API:', error)
+  }
+  
+  // Fallback на localStorage
+  return getProductsFromLocalStorage()
+}
+
+export async function saveProduct(product: Product): Promise<void> {
+  try {
+    const productToSave = {
+      ...product,
+      updatedAt: new Date().toISOString(),
+      createdAt: product.createdAt || new Date().toISOString(),
+    }
+
+    const isNew = !product.id || product.id === ''
+    const response = await fetch(API_BASE, {
+      method: isNew ? 'POST' : 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(productToSave),
+    })
+
+    if (response.ok) {
+      return // Успешно сохранено в БД
+    }
+  } catch (error) {
+    console.error('Error saving product to API:', error)
+  }
+  
+  // Fallback на localStorage
+  saveProductToLocalStorage(product)
+}
+
+export async function deleteProduct(productId: string): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE}?id=${encodeURIComponent(productId)}`, {
+      method: 'DELETE',
+    })
+
+    if (response.ok) {
+      return // Успешно удалено из БД
+    }
+  } catch (error) {
+    console.error('Error deleting product from API:', error)
+  }
+  
+  // Fallback на localStorage
+  deleteProductFromLocalStorage(productId)
+}
+
+// Функции для работы с localStorage (fallback)
+function getProductsFromLocalStorage(): Product[] {
   if (typeof window === 'undefined') return []
   
   try {
@@ -14,10 +79,10 @@ export function getProducts(): Product[] {
   }
 }
 
-export function saveProduct(product: Product): void {
+function saveProductToLocalStorage(product: Product): void {
   if (typeof window === 'undefined') return
   
-  const products = getProducts()
+  const products = getProductsFromLocalStorage()
   const existingIndex = products.findIndex((p) => p.id === product.id)
   
   if (existingIndex >= 0) {
@@ -29,10 +94,10 @@ export function saveProduct(product: Product): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(products))
 }
 
-export function deleteProduct(productId: string): void {
+function deleteProductFromLocalStorage(productId: string): void {
   if (typeof window === 'undefined') return
   
-  const products = getProducts().filter((p) => p.id !== productId)
+  const products = getProductsFromLocalStorage().filter((p) => p.id !== productId)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(products))
 }
 

@@ -17,9 +17,9 @@ export default function CartPage() {
     updateCart()
   }, [])
 
-  const updateCart = () => {
+  const updateCart = async () => {
     const cart = getCart()
-    const products = getProducts()
+    const products = await getProducts()
     
     const items: CartItem[] = cart
       .map((item) => {

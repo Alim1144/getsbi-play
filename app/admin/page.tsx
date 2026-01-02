@@ -28,10 +28,11 @@ export default function AdminPage() {
     // Проверяем авторизацию
     fetch('/api/admin/check')
       .then((res) => res.json())
-      .then((data) => {
+      .then(async (data) => {
         if (data.authenticated) {
           setIsAuthenticated(true)
-          setProducts(getProducts())
+          const productsList = await getProducts()
+          setProducts(productsList)
         } else {
           router.push('/admin/login')
         }
@@ -79,7 +80,7 @@ export default function AdminPage() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const product: Product = {
@@ -94,8 +95,9 @@ export default function AdminPage() {
       updatedAt: new Date().toISOString(),
     }
 
-    saveProduct(product)
-    setProducts(getProducts())
+    await saveProduct(product)
+    const productsList = await getProducts()
+    setProducts(productsList)
     resetForm()
   }
 
@@ -125,10 +127,11 @@ export default function AdminPage() {
     setIsFormOpen(true)
   }
 
-  const handleDelete = (productId: string) => {
+  const handleDelete = async (productId: string) => {
     if (confirm('Вы уверены, что хотите удалить этот товар?')) {
-      deleteProduct(productId)
-      setProducts(getProducts())
+      await deleteProduct(productId)
+      const productsList = await getProducts()
+      setProducts(productsList)
     }
   }
 
