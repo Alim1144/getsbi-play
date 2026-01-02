@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Product, ProductCategory } from '@/lib/types'
 import { getProducts } from '@/lib/storage'
 import { formatPrice, getCategoryName } from '@/lib/utils'
 
-export default function CatalogPage() {
+function CatalogContent() {
   const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
@@ -150,5 +150,20 @@ export default function CatalogPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function CatalogPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold text-neon-blue mb-8">Каталог товаров</h1>
+        <div className="text-center py-16">
+          <p className="text-gray-400">Загрузка...</p>
+        </div>
+      </div>
+    }>
+      <CatalogContent />
+    </Suspense>
   )
 }
