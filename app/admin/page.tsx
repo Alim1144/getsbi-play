@@ -83,22 +83,54 @@ export default function AdminPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    const priceValue = parseFloat(formData.price)
+    const discountValue = formData.discount ? parseFloat(formData.discount) : undefined
+
+    if (Number.isNaN(priceValue) || priceValue < 0) {
+      alert('Введите корректную цену')
+      return
+    }
+
+    if (discountValue !== undefined && (discountValue < 0 || discountValue > 100)) {
+      alert('Скидка должна быть от 0 до 100%')
+      return
+    }
+
     const product: Product = {
       id: editingProduct?.id || Date.now().toString(),
       name: formData.name,
       description: formData.description,
-      price: parseFloat(formData.price),
-      discount: formData.discount ? parseFloat(formData.discount) : undefined,
+      price: priceValue,
+      discount: discountValue,
       category: formData.category,
       images: formData.images,
       createdAt: editingProduct?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
 
-    await saveProduct(product)
-    const productsList = await getProducts()
-    setProducts(productsList)
-    resetForm()
+    try {
+      await saveProduct(product)
+
+      // Оптимистично обновляем список, чтобы пользователь увидел товар сразу
+      setProducts((prev) => {
+        const existingIndex = prev.findIndex((p) => p.id === product.id)
+        if (existingIndex >= 0) {
+          const copy = [...prev]
+          copy[existingIndex] = product
+          return copy
+        }
+        return [product, ...prev]
+      })
+
+      // Пытаемся синхронизировать с актуальным источником
+      const productsList = await getProducts()
+      setProducts(productsList)
+
+      resetForm()
+    } catch (err) {
+      console.error('Save product error', err)
+      alert('Не удалось сохранить товар. Попробуйте еще раз.')
+    }
   }
 
   const resetForm = () => {

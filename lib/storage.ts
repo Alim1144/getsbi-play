@@ -42,6 +42,8 @@ export async function saveProduct(product: Product): Promise<void> {
     if (response.ok) {
       return // Успешно сохранено в БД
     }
+
+    console.warn('Save product via API failed, fallback to localStorage', response.status)
   } catch (error) {
     console.error('Error saving product to API:', error)
   }
@@ -59,6 +61,8 @@ export async function deleteProduct(productId: string): Promise<void> {
     if (response.ok) {
       return // Успешно удалено из БД
     }
+
+    console.warn('Delete product via API failed, fallback to localStorage', response.status)
   } catch (error) {
     console.error('Error deleting product from API:', error)
   }
